@@ -14,11 +14,11 @@ static llvm::cl::OptionCategory toolCategory("for-postfix options");
 
 static llvm::cl::extrahelp commonHelp(CommonOptionsParser::HelpMessage);
 
-static StatementMatcher incMatcher =
+static StatementMatcher builtinMatcher =
     forStmt(                          // for ([init]; [condition]; [increment])
         hasIncrement(                 // "increment" part of for-loop
             unaryOperator(            // any unary op, e.g. *, &, --
-                hasOperatorName("++") // exact unary op: ++
+
             ).bind("op")              // bind matched unary op to "op" name
         )
     );
@@ -33,7 +33,7 @@ public:
         typedef UnaryOperator UnOp;
 
         if (const UnOp *op = result.Nodes.getNodeAs<UnOp>("op")) {
-            if (op->isPostfix()) {
+            if (op->isIncrementDecrementOp() && op->isPostfix()) {
                 op->dump();
                 std::cout << '\n';
             }
@@ -51,7 +51,7 @@ main(int argc, const char *argv[])
     MatchHelper helper;
 
     MatchFinder finder;
-    finder.addMatcher(incMatcher, &helper);
+    finder.addMatcher(builtinMatcher, &helper);
 
     return tool.run(newFrontendActionFactory(&finder));
 }

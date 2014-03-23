@@ -10,6 +10,8 @@ using namespace clang::tooling;
 
 static llvm::cl::OptionCategory toolCategory("for-postfix options");
 
+static llvm::cl::extrahelp commonHelp(CommonOptionsParser::HelpMessage);
+
 int
 main(int argc, const char *argv[])
 {

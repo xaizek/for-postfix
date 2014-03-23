@@ -33,8 +33,10 @@ public:
         typedef UnaryOperator UnOp;
 
         if (const UnOp *op = result.Nodes.getNodeAs<UnOp>("op")) {
-            op->dump();
-            std::cout << '\n';
+            if (op->isPostfix()) {
+                op->dump();
+                std::cout << '\n';
+            }
         }
     }
 };

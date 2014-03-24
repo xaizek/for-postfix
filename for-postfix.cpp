@@ -7,6 +7,10 @@
 #include <clang/Tooling/CommonOptionsParser.h>
 #include <clang/Tooling/Tooling.h>
 
+#include <clang/Basic/SourceLocation.h>
+#include <clang/Basic/SourceManager.h>
+
+using namespace clang;
 using namespace clang::ast_matchers;
 using namespace clang::tooling;
 
@@ -57,10 +61,19 @@ public:
 
 private:
     void printOut(const MatchFinder::MatchResult &result,
-                  const clang::Expr *expr) const
+                  const Expr *expr) const
     {
-        expr->dump();
-        std::cout << '\n';
+        FullSourceLoc fullLoc(expr->getLocStart(), *result.SourceManager);
+
+        const std::string &fileName = result.SourceManager->getFilename(fullLoc);
+        const unsigned int lineNum = fullLoc.getSpellingLineNumber();
+
+        std::cout << fileName
+                  << ":"
+                  << lineNum
+                  << ":"
+                  << "dangerous use of postfix operator"
+                  << '\n';
     }
 };
 

@@ -23,6 +23,15 @@ static StatementMatcher builtinMatcher =
         )
     );
 
+static StatementMatcher opMatcher =
+    forStmt(                          // for ([init]; [condition]; [increment])
+        hasIncrement(                 // "increment" part of for-loop
+            operatorCallExpr(         // call of overloaded operator
+                argumentCountIs(2)    // that requires two arguments
+            ).bind("op")              // bind matched unary op to "op" name
+        )
+    );
+
 class MatchHelper : public MatchFinder::MatchCallback
 {
 public:
@@ -31,13 +40,27 @@ public:
         using namespace clang;
 
         typedef UnaryOperator UnOp;
+        typedef CXXOperatorCallExpr Call;
 
         if (const UnOp *op = result.Nodes.getNodeAs<UnOp>("op")) {
             if (op->isIncrementDecrementOp() && op->isPostfix()) {
-                op->dump();
-                std::cout << '\n';
+                printOut(result, op);
+            }
+        } else if (const Call *op = result.Nodes.getNodeAs<Call>("op")) {
+            const OverloadedOperatorKind opKind = op->getOperator();
+
+            if (opKind == OO_PlusPlus || opKind == OO_MinusMinus) {
+                printOut(result, op);
             }
         }
+    }
+
+private:
+    void printOut(const MatchFinder::MatchResult &result,
+                  const clang::Expr *expr) const
+    {
+        expr->dump();
+        std::cout << '\n';
     }
 };
 
@@ -52,6 +75,7 @@ main(int argc, const char *argv[])
 
     MatchFinder finder;
     finder.addMatcher(builtinMatcher, &helper);
+    finder.addMatcher(opMatcher, &helper);
 
     return tool.run(newFrontendActionFactory(&finder));
 }

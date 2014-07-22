@@ -23,6 +23,7 @@
 #include <llvm/Support/CommandLine.h>
 
 #include <clang/ASTMatchers/ASTMatchFinder.h>
+#include <clang/ASTMatchers/ASTMatchers.h>
 
 #include <clang/Tooling/CommonOptionsParser.h>
 #include <clang/Tooling/Tooling.h>
@@ -110,5 +111,5 @@ main(int argc, const char *argv[])
     finder.addMatcher(builtinMatcher, &helper);
     finder.addMatcher(opMatcher, &helper);
 
-    return tool.run(newFrontendActionFactory(&finder));
+    return tool.run(newFrontendActionFactory(&finder).get());
 }
